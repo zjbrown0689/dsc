@@ -105,7 +105,8 @@ END AS cost
 FROM Bookings
 LEFT JOIN Members USING (memid)
 LEFT JOIN Facilities USING (facid)
-WHERE starttime LIKE "2012-09-14%"
+WHERE starttime LIKE "2012-09-14%" 
+HAVING cost > 30
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
 
