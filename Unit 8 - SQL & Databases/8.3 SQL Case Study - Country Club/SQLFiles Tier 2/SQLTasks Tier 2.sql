@@ -76,6 +76,7 @@ who signed up. Try not to use the LIMIT clause for your solution. */
 
 SELECT surname, firstname, joindate
 FROM Members
+WHERE joindate LIKE '2012-09-26%'
 ORDER BY joindate DESC;
 
 /* Q7: Produce a list of all members who have used a tennis court.
@@ -97,22 +98,30 @@ the guest user's ID is always 0. Include in your output the name of the
 facility, the name of the member formatted as a single column, and the cost.
 Order by descending cost, and do not use any subqueries. */
 
-SELECT Facilities.name, CONCAT(firstname, ' ', surname) AS member_name,
+SELECT name, CONCAT(firstname, ' ', surname) AS member_name, (slots *
 CASE
 	WHEN memid = 0 THEN guestcost
 	ELSE membercost
-END AS cost 
+END) AS cost 
 FROM Bookings
 LEFT JOIN Members USING (memid)
 LEFT JOIN Facilities USING (facid)
 WHERE starttime LIKE "2012-09-14%" 
 HAVING cost > 30
+ORDER BY cost DESC
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
 
-SELECT 
-FROM 
-WHERE 
+SELECT name, CONCAT(firstname, ' ', surname) AS member_name, 
+	(SELECT 
+	FROM 
+	WHERE ) AS cost 
+FROM Bookings
+LEFT JOIN Members USING (memid)
+LEFT JOIN Facilities USING (facid)
+WHERE starttime LIKE "2012-09-14%" 
+HAVING cost > 30
+ORDER BY cost DESC
 
 /* PART 2: SQLite
 
@@ -124,11 +133,33 @@ QUESTIONS:
 The output of facility name and total revenue, sorted by revenue. Remember
 that there's a different cost for guests and members! */
 
+SELECT name, SUM(slots * (CASE WHEN memid = 0 THEN guestcost ELSE membercost END)) AS total_revenue
+FROM FACILITIES
+INNER JOIN Bookings USING (facid)
+INNER JOIN Members USING (memid)
+GROUP BY facid
+HAVING total_revenue < 1000
+ORDER BY total_revenue
+
 /* Q11: Produce a report of members and who recommended them in alphabetic surname,firstname order */
 
+SELECT m1.surname, m1.firstname, (m2.firstname||' '||m2.surname) AS recommended_by 
+FROM Members AS m1
+LEFT JOIN Members AS m2 ON m1.recommendedby = m2.memid
+ORDER BY m1.surname, m1.firstname
 
 /* Q12: Find the facilities with their usage by member, but not guests */
 
+SELECT name, firstname, surname, COUNT(slots) 
+FROM Bookings
+LEFT JOIN Members USING (memid)
+LEFT JOIN Facilities USING (facid)
+WHERE memid <> 0
+GROUP BY facid, memid
 
 /* Q13: Find the facilities usage by month, but not guests */
 
+SELECT name, strftime('%m', starttime) AS month, COUNT(slots) AS usage
+FROM Bookings
+INNER JOIN Facilities USING (facid)
+GROUP BY name, month
