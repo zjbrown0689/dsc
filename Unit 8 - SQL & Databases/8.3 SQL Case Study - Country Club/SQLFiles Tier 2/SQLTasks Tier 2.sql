@@ -112,16 +112,19 @@ ORDER BY cost DESC
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
 
-SELECT name, CONCAT(firstname, ' ', surname) AS member_name, 
-	(SELECT 
-	FROM 
-	WHERE ) AS cost 
-FROM Bookings
-LEFT JOIN Members USING (memid)
-LEFT JOIN Facilities USING (facid)
-WHERE starttime LIKE "2012-09-14%" 
-HAVING cost > 30
-ORDER BY cost DESC
+SELECT *
+FROM (
+    SELECT name, CONCAT(firstname, ' ', surname) AS member_name, (slots *
+	CASE
+	WHEN memid = 0 THEN guestcost
+	ELSE membercost
+	END) AS cost
+	FROM Bookings
+	LEFT JOIN Members USING (memid)
+	LEFT JOIN Facilities USING (facid)
+	WHERE starttime LIKE "2012-09-14%") AS subquery
+WHERE cost > 30
+ORDER BY cost DESC;
 
 /* PART 2: SQLite
 
